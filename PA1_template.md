@@ -7,18 +7,7 @@
 ```r
 unzip("activity.zip")
 activity <- read.csv("activity.csv")
-summary(activity)
-```
-
-```
-##      steps                date          interval     
-##  Min.   :  0.00   2012-10-01:  288   Min.   :   0.0  
-##  1st Qu.:  0.00   2012-10-02:  288   1st Qu.: 588.8  
-##  Median :  0.00   2012-10-03:  288   Median :1177.5  
-##  Mean   : 37.38   2012-10-04:  288   Mean   :1177.5  
-##  3rd Qu.: 12.00   2012-10-05:  288   3rd Qu.:1766.2  
-##  Max.   :806.00   2012-10-06:  288   Max.   :2355.0  
-##  NA's   :2304     (Other)   :15840
+#summary(activity)
 ```
 
 
@@ -162,5 +151,46 @@ There appears to be only slight impact on the median by inputting the missing da
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
-thoughts
+i). Create a new factor variable in the dataset with two levels -- "weekday" and "weekend" indicating whether a given date is a
+   weekday or weekend day.
 
+
+```r
+Day_type <- function(date) 
+{
+ day<- weekdays(date)
+ if (day %in% c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday"))
+   return("weekday") 
+ else if (day %in% c("Saturday", "Sunday"))
+   return("weekend")
+ else stop("Invalid date")
+}
+activity$date<- as.Date(activity$date)
+activity$day<- sapply(activity$date, FUN = Day_type)
+#summary(activity$date)
+#summary(activity$day)
+```
+
+
+2. Make a panel plot containing a time series plot (i.e. `type = "l"`) of the 5-minute interval (x-axis) and the average number of steps
+   taken, averaged across all weekday days or weekend days  (y-axis).
+
+
+```r
+library(ggplot2)
+```
+
+```
+## Warning: package 'ggplot2' was built under R version 3.1.3
+```
+
+```r
+averages<- aggregate(steps ~ interval + day, data = activity, mean)
+ggplot(averages, aes(interval, steps)) + geom_line(color="blue") + facet_wrap(~ day, nrow=2, ncol=1) + xlab("5-minute interval") + ylab("Number of steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-11-1.png) 
+
+**From here we can see a similar curve, with some difference between weekdays and weekends.
+On weekdays there is a notable peak between 750 and 1000 intervals, with the rest on average below 100 steps
+On weekends that spike occurs around the same interval but is much reduced, the average overall activity is higher.**
